@@ -1,6 +1,5 @@
 import secrets
 from zipfile import ZipFile
-import psutil
 import shutil
 
 from typing import Union
@@ -99,15 +98,6 @@ async def healthcheck():
             "total": total,
             "used": used,
             "free": free
-        },
-        "ram": {
-            "total": psutil.virtual_memory().total,
-            "used": psutil.virtual_memory().used,
-            "free": psutil.virtual_memory().free
-        },
-        "cpu": {
-            "total": psutil.cpu_count(),
-            "usage": psutil.cpu_percent(),
         }
     }
 
