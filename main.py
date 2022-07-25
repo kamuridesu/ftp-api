@@ -1,6 +1,7 @@
-import json
 import secrets
 from zipfile import ZipFile
+import psutil
+import shutil
 
 from typing import Union
 
@@ -15,6 +16,7 @@ from util import *
 
 app = FastAPI()
 security = HTTPBasic()
+
 
 def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
     username: Union[str, None] = None
@@ -53,21 +55,30 @@ async def error(message: str="Generic error", code: int=400):
     )
 
 
-@app.get("/file/{filename}")
-async def getFile(filename: str, is_valid_user: str = Depends(get_current_username)):
+@app.get("/files/{filename}")
+async def getFile(filename: Union[str, int], is_valid_user: str = Depends(get_current_username)):
     if is_valid_user:
         files = os.listdir(ROOT_FILES_FOLDER)
-        if filename in files:
-            if not os.path.isfile(filename):
-                filename = os.path.join(ROOT_FILES_FOLDER, filename)
+        try:
+            filename = int(filename)
+        except (TypeError, ValueError):
+            pass
+        if isinstance(filename, str):
+            if filename in files:
                 if not os.path.isfile(filename):
-                    return RedirectResponse("/error?message=File not found&code=404")
-            with open(filename, "r", encoding="utf-8") as f:
-                return json.loads(f.read())
+                    filename = os.path.join(ROOT_FILES_FOLDER, filename)
+                    if not os.path.isfile(filename):
+                        return RedirectResponse("/error?message=File not found&code=404")
+                return FileResponse(filename)
+        elif isinstance(filename, int) and filename < len(files):
+            try:
+                return FileResponse(os.path.join(ROOT_FILES_FOLDER, files[filename]))
+            except Exception as e:
+                pass
         return RedirectResponse("/error?message=File not found&code=404")
 
 
-@app.get("/all")
+@app.get("/files/all")
 async def getAllZip(bg_tasks: BackgroundTasks, is_valid_user: str = Depends(get_current_username)):
     if is_valid_user:
         temp_name = generateFileRandomName(suffix=".zip")
@@ -81,11 +92,33 @@ async def getAllZip(bg_tasks: BackgroundTasks, is_valid_user: str = Depends(get_
 
 @app.get("/health")
 async def healthcheck():
+    total, used, free = shutil.disk_usage("/")
     return {
-        "status": "ok"
+        "status": "ok",
+        "disk": {
+            "total": total,
+            "used": used,
+            "free": free
+        },
+        "ram": {
+            "total": psutil.virtual_memory().total,
+            "used": psutil.virtual_memory().used,
+            "free": psutil.virtual_memory().free
+        },
+        "cpu": {
+            "total": psutil.cpu_count(),
+            "usage": psutil.cpu_percent(),
+        }
     }
 
 
 @app.get("/")
 async def index():
-    return RedirectResponse("/health")
+    return {
+        "endpoints": [
+            "/files",
+            "/files/{filename|id}",
+            "/files/all",
+            "health"
+        ]
+    }
