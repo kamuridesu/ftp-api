@@ -22,8 +22,10 @@ def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
         if secrets.compare_digest(credentials.username, user):
             username = user
             break
-    is_valid_password = secrets.compare_digest(credentials.password, AUTHORIZED[username])
-    if not (username is None and is_valid_password):
+    is_valid_password = None
+    if username is not None:
+        is_valid_password = secrets.compare_digest(credentials.password, AUTHORIZED[username])
+    if not (username is not None and is_valid_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
