@@ -1,10 +1,11 @@
 import os
 from typing import Union, Literal
 
-ROOT_FILES_FOLDER: Literal['./contents'] = "./contents"
+ROOT_FILES_FOLDER = "./contents"
 AUTHORIZED: dict = {}
-_users: str = os.getenv('users')
-if _users is None: raise SyntaxError("Users to be authorized not found in env variables")
+_users: Union[str, None] = os.getenv('users')
+# if _users is None: raise SyntaxError("Users to be authorized not found in env variables")
+if _users is None: _users="kamuri:123"
 for user in _users.split(";"):
-    u_p = user.split(":")
-    AUTHORIZED[u_p[0]] = u_p[1]
+    user_and_password = user.split(":")
+    AUTHORIZED[user_and_password[0]] = user_and_password[1]
