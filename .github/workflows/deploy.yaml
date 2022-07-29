@@ -7,17 +7,17 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: "Login on docker registry"
-        run: sh echo "{\"auths\":{\"${{ secrets.CI_REGISTRY }}\":{\"auth\":\"${{ secrets.CI_REGISTRY_AUTH }}\"}}}" > ~/.docker/config.json
+        run: echo "{\"auths\":{\"${{ secrets.CI_REGISTRY }}\":{\"auth\":\"${{ secrets.CI_REGISTRY_AUTH }}\"}}}" > ~/.docker/config.json
       - name: "Build image"
         run: docker build -t ${{ secrets.CI_REGISTRY }}/${{ secrets.CI_IMAGE }} .
       - name: "Push image to docker registry"
         run: docker push ${{ secrets.CI_REGISTRY }}/${{ secrets.CI_IMAGE }}
   deploy-alpine:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/alpine'
     steps:
       - name: "Login on docker registry"
-        run: sh echo "{\"auths\":{\"${{ secrets.CI_REGISTRY }}\":{\"auth\":\"${{ secrets.CI_REGISTRY_AUTH }}\"}}}" > ~/.docker/config.json
+        run: echo "{\"auths\":{\"${{ secrets.CI_REGISTRY }}\":{\"auth\":\"${{ secrets.CI_REGISTRY_AUTH }}\"}}}" > ~/.docker/config.json
       - name: "Build image"
         run: docker build -t ${{ secrets.CI_REGISTRY }}/${{ secrets.CI_IMAGE }}-alpine .
       - name: "Push image to docker registry"
