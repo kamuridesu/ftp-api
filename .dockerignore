@@ -3,3 +3,5 @@ __pycache__
 Dockerfile
 .gitignore
 contents
+.github
+.vscode
