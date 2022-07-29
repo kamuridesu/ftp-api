@@ -9,9 +9,9 @@ jobs:
       - name: "Login on docker registry"
         run: echo "{\"auths\":{\"${{ secrets.CI_REGISTRY }}\":{\"auth\":\"${{ secrets.CI_REGISTRY_AUTH }}\"}}}" > ~/.docker/config.json
       - name: "Build image"
-        run: docker build -t ${{ secrets.CI_REGISTRY }}/${{ secrets.CI_IMAGE }} .
+        run: docker build -t kamuri/${{ github.event.repository.name }} .
       - name: "Push image to docker registry"
-        run: docker push ${{ secrets.CI_REGISTRY }}/${{ secrets.CI_IMAGE }}
+        run: docker push kamuri/${{ github.event.repository.name }}
   deploy-alpine:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/alpine'
@@ -19,7 +19,7 @@ jobs:
       - name: "Login on docker registry"
         run: echo "{\"auths\":{\"${{ secrets.CI_REGISTRY }}\":{\"auth\":\"${{ secrets.CI_REGISTRY_AUTH }}\"}}}" > ~/.docker/config.json
       - name: "Build image"
-        run: docker build -t ${{ secrets.CI_REGISTRY }}/${{ secrets.CI_IMAGE }}-alpine .
+        run: docker build -t kamuri/${{ github.event.repository.name }}-alpine .
       - name: "Push image to docker registry"
-        run: docker push ${{ secrets.CI_REGISTRY }}/${{ secrets.CI_IMAGE }}-alpine
+        run: docker push kamuri/${{ github.event.repository.name }}-alpine
     
