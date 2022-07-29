@@ -1,0 +1,33 @@
+name: CD
+on: push
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2.3.1
+        with:
+          ref: main
+      - name: "Login on docker registry"
+        run: echo "{\"auths\":{\"${{ secrets.CI_REGISTRY }}\":{\"auth\":\"${{ secrets.CI_REGISTRY_AUTH }}\"}}}" > ~/.docker/config.json
+      - name: "Build image"
+        run: docker build -t kamuri/${{ github.event.repository.name }} .
+      - name: "Push image to docker registry"
+        run: docker push kamuri/${{ github.event.repository.name }}
+  deploy-alpine:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/alpine'
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2.3.1
+        with:
+          ref: alpine
+      - name: "Login on docker registry"
+        run: echo "{\"auths\":{\"${{ secrets.CI_REGISTRY }}\":{\"auth\":\"${{ secrets.CI_REGISTRY_AUTH }}\"}}}" > ~/.docker/config.json
+      - name: "Build image"
+        run: docker build -t kamuri/${{ github.event.repository.name }}-alpine .
+      - name: "Push image to docker registry"
+        run: docker push kamuri/${{ github.event.repository.name }}-alpine
+    
