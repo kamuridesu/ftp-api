@@ -8,11 +8,11 @@ The purpose of this is to deliver a fast do deploy, minimal FTP api on servers.
 ### Running
 To run it, you'll need to attach a volume to the container specifying the /app/contents folder as well the users that have access using env vars:
 ```sh
-docker run -d --name ftp-api -p 80:8000 -e users="kamuri:123;test:user" -v $(pwd)/contents:/app/contents kamuri/ftp-api:latest
+docker run -d --name ftp-api -p 80:8000 -e users="admin:123;test:user" -v $(pwd)/contents:/app/contents kamuri/ftp-api:latest
 ```
 ### Endpoints
-- /
-- /health
-- /files
-- /files/<filename|id>
-- /files/all
+- `/`
+- `/health`
+- `/files`
+- `/files/<filename|id>`
+- `/files/all`
