@@ -6,7 +6,7 @@ import shutil
 from typing import Union
 
 from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.responses import RedirectResponse, FileResponse
+from fastapi.responses import FileResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from starlette.background import BackgroundTasks
@@ -36,17 +36,6 @@ def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
     return True
 
 
-@app.get("/files")
-async def getFiles(is_valid_user: str = Depends(get_current_username)):
-    if is_valid_user:
-        files = os.listdir(ROOT_FILES_FOLDER)
-        return {
-            "total_files": len(files),
-            "files": files
-        }
-
-
-@app.get("/error", status_code=400)
 async def error(message: str="Generic error", code: int=400):
     print("An error occured!")
     raise HTTPException(
@@ -55,27 +44,23 @@ async def error(message: str="Generic error", code: int=400):
     )
 
 
-@app.get("/files/{filename}")
-async def getFile(filename: Union[str, int], is_valid_user: str = Depends(get_current_username)):
+@app.get("/files")
+async def getFiles(is_valid_user: str = Depends(get_current_username)):
     if is_valid_user:
-        files = os.listdir(ROOT_FILES_FOLDER)
+        files = generateJsonFromPath(ROOT_FILES_FOLDER)
+        return files
+
+
+@app.get("/files/{file_name_or_id:path}")
+async def getFile(file_name_or_id: Union[str, int], is_valid_user: str = Depends(get_current_username)):
+    if is_valid_user:
         try:
-            filename = int(filename)
-        except (TypeError, ValueError):
-            pass
-        if isinstance(filename, str):
-            if filename in files:
-                if not os.path.isfile(filename):
-                    filename = os.path.join(ROOT_FILES_FOLDER, filename)
-                    if not os.path.isfile(filename):
-                        return RedirectResponse("/error?message=File not found&code=404")
-                return FileResponse(filename)
-        elif isinstance(filename, int) and filename < len(files):
-            try:
-                return FileResponse(os.path.join(ROOT_FILES_FOLDER, files[filename]))
-            except Exception as e:
-                pass
-        return RedirectResponse("/error?message=File not found&code=404")
+            return FileResponse(os.path.join(ROOT_FILES_FOLDER, findFilesById(ROOT_FILES_FOLDER, int(file_name_or_id))))
+        except Exception:
+            if isinstance(file_name_or_id, str):
+                if os.path.isfile(os.path.join(ROOT_FILES_FOLDER, file_name_or_id)):
+                    return FileResponse(os.path.join(ROOT_FILES_FOLDER, file_name_or_id))
+        return await error("File not found", 404)
 
 
 @app.get("/files/all")
